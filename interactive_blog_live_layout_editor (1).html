@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Okay, but why? - Unfiltered Takes & Moderated Blog Platform</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#fff1f2',
+              100: '#ffe4e6',
+              500: '#f43f5e',
+              600: '#e11d48',
+              700: '#be123c',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .edit-mode .editable-field:hover {
+      outline: 2px dashed #e11d48;
+      outline-offset: 4px;
+      cursor: pointer;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .edit-mode .editable-field:hover::after {
+      content: '✏️ Edit Title';
+      position: absolute;
+      top: -24px;
+      right: 0;
+      background: #e11d48;
+      color: white;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 50;
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased min-h-full flex flex-col transition-colors duration-300">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="sticky top-0 z-40 w-full bg-slate-900 text-white border-b border-slate-800 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo / Title -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('public')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 via-amber-500 to-violet-600 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-rose-500/20">
+          ?
+        </div>
+        <div>
+          <span class="font-extrabold text-lg sm:text-xl tracking-tight block leading-none">Okay, <span class="text-rose-500">but why?</span></span>
+          <span class="text-[10px] text-slate-400 font-medium hidden sm:block">Societal Issues • Politics • Showbiz</span>
+        </div>
+      </div>
+
+      <!-- Center Action Navigation -->
+      <div class="flex items-center space-x-2">
+        <button id="nav-public-btn" onclick="switchView('public')" class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition bg-rose-600 text-white shadow-md">
+          <i class="fa-solid fa-newspaper mr-1.5"></i> Blog Feed
+        </button>
+        <button id="nav-submit-btn" onclick="openSubmitModal()" class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700">
+          <i class="fa-solid fa-paper-plane mr-1.5 text-amber-400"></i> Submit Post
+        </button>
+        <button id="nav-admin-btn" onclick="switchView('admin')" class="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border border-slate-700 relative">
+          <i class="fa-solid fa-user-shield mr-1.5 text-rose-400"></i> Admin Panel
+          <span id="pending-badge" class="hidden absolute -top-1.5 -right-1.5 bg-amber-500 text-slate-950 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow">0</span>
+        </button>
+      </div>
+
+      <!-- Quick Controls -->
+      <div class="flex items-center space-x-2">
+        <button onclick="toggleDarkMode()" class="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs">
+          <i id="dark-icon" class="fa-solid fa-moon"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- PUBLIC READ VIEW CONTAINER -->
+    <div id="public-view" class="space-y-10">
+
+      <!-- HERO BANNER -->
+      <section class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-rose-950 to-slate-900 text-white p-8 md:p-12 shadow-2xl border border-slate-800">
+        <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="max-w-3xl relative z-10">
+          <span class="inline-block px-3 py-1 bg-rose-500/20 text-rose-300 rounded-full text-xs font-semibold tracking-wide uppercase mb-4 border border-rose-500/30">
+            Unfiltered Perspectives
+          </span>
+          <h1 id="site-hero-title" class="editable-field text-3xl sm:text-5xl font-black font-serif tracking-tight mb-4 leading-tight">
+            Questioning societal norms, political madness, and pop culture drama.
+          </h1>
+          <p id="site-hero-sub" class="editable-field text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+            Ever look at the headlines, celebrity chaos, or weird social trends and ask yourself: <em>"Okay, but why?"</em> You are in the right place. Submit your own hot takes or read moderated essays from real people.
+          </p>
+          <div class="flex flex-wrap gap-3 items-center">
+            <button onclick="openSubmitModal()" class="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-lg shadow-rose-600/30 flex items-center space-x-2">
+              <i class="fa-solid fa-pen-nib"></i>
+              <span>Have Something To Say? Write A Post</span>
+            </button>
+            <span class="text-xs text-slate-400 font-medium">⚡ All user posts pass through Admin approval before publication.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- CATEGORY & SEARCH FILTER BAR -->
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-6">
+        <div id="category-bar" class="flex flex-wrap gap-2 w-full md:w-auto">
+          <!-- Dynamic category pills -->
+        </div>
+
+        <div class="relative w-full md:w-80">
+          <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Search articles, topics, celebrities..." class="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 transition">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+        </div>
+      </div>
+
+      <!-- MAIN ARTICLES GRID WITH SIDEBAR -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Articles Column (8 Cols) -->
+        <div class="lg:col-span-8 space-y-8">
+          <div id="featured-hero-container">
+            <!-- Hero Featured Post Injected via JS -->
+          </div>
+
+          <div id="posts-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <!-- Standard Grid Posts Injected via JS -->
+          </div>
+
+          <div id="empty-feed-state" class="hidden text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+            <i class="fa-solid fa-face-rolling-eyes text-4xl text-slate-400 mb-3"></i>
+            <h3 class="text-base font-bold text-slate-700 dark:text-slate-200">No articles matched your filter</h3>
+            <p class="text-xs text-slate-500 max-w-xs mx-auto mt-1">Try resetting search parameters or submit a post for approval!</p>
+          </div>
+        </div>
+
+        <!-- Sidebar Column (4 Cols) -->
+        <aside class="lg:col-span-4 space-y-8">
+          
+          <!-- Editorial Bio Card -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center space-x-3 mb-4">
+              <div class="w-12 h-12 rounded-full bg-rose-600 flex items-center justify-center text-white font-black text-lg">
+                ?
+              </div>
+              <div>
+                <h3 class="font-bold text-sm text-slate-900 dark:text-white">Chief Editor & Moderator</h3>
+                <p class="text-xs text-rose-500 font-semibold">Okay, but why? Editorial Desk</p>
+              </div>
+            </div>
+            <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
+              We aggregate and review hot takes on hot-button societal dilemmas, political commentary, showbiz controversies, and quirky shower thought rants.
+            </p>
+            <button onclick="openSubmitModal()" class="w-full bg-slate-900 dark:bg-slate-800 hover:bg-rose-600 text-white py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-plus"></i>
+              <span>Submit Your Article Draft</span>
+            </button>
+          </div>
+
+          <!-- Pending Submission Alert Widget -->
+          <div class="bg-gradient-to-br from-amber-500/10 to-rose-500/10 border border-amber-500/20 p-5 rounded-2xl">
+            <h4 class="font-bold text-xs uppercase text-amber-600 dark:text-amber-400 tracking-wider mb-2 flex items-center justify-between">
+              <span>Moderation Policy</span>
+              <i class="fa-solid fa-shield-halved"></i>
+            </h4>
+            <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              Anyone can write for <strong>Okay, but why?</strong> To maintain readability and prevent spam, all submissions enter the <strong>Admin Moderation Queue</strong> before appearing on the public feed.
+            </p>
+          </div>
+
+          <!-- Trending Topics -->
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <h3 class="font-bold text-xs uppercase tracking-wider text-slate-900 dark:text-white mb-4">Trending Hashtags</h3>
+            <div id="sidebar-tags" class="flex flex-wrap gap-2">
+              <!-- Dynamic tags -->
+            </div>
+          </div>
+
+        </aside>
+
+      </div>
+    </div>
+
+    <!-- ADMIN CONTROL PANEL VIEW (PROTECTED) -->
+    <div id="admin-view" class="hidden space-y-8">
+
+      <!-- Admin Header Banner -->
+      <div class="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-xl">
+        <div>
+          <div class="flex items-center space-x-3 mb-2">
+            <span class="px-3 py-1 bg-rose-500/20 text-rose-400 rounded-full text-xs font-bold uppercase tracking-wider border border-rose-500/30">
+              Admin & Moderation Hub
+            </span>
+            <span id="admin-auth-indicator" class="text-xs text-emerald-400 font-semibold flex items-center">
+              <i class="fa-solid fa-lock-open mr-1"></i> Authenticated
+            </span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold font-serif">Platform Permissions & Approval Queue</h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">Review user draft submissions, approve articles to public feed, or publish original posts directly.</p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button onclick="openNewPostModal()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2 shadow-lg">
+            <i class="fa-solid fa-plus"></i>
+            <span>Create Admin Post</span>
+          </button>
+          <button onclick="lockAdmin()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-xl text-xs font-semibold border border-slate-700">
+            <i class="fa-solid fa-lock mr-1"></i> Lock Admin
+          </button>
+        </div>
+      </div>
+
+      <!-- Password Lock Screen Overlay (If not unlocked) -->
+      <div id="admin-lock-screen" class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 max-w-md mx-auto text-center space-y-4 shadow-2xl">
+        <div class="w-16 h-16 bg-rose-500/10 text-rose-500 rounded-full flex items-center justify-center mx-auto text-2xl">
+          <i class="fa-solid fa-user-lock"></i>
+        </div>
+        <h3 class="text-xl font-bold text-slate-900 dark:text-white">Admin Authentication Required</h3>
+        <p class="text-xs text-slate-500">Enter administrator password to access the approval moderation queue.</p>
+        <p class="text-[11px] bg-slate-100 dark:bg-slate-800 py-1.5 px-3 rounded-lg text-slate-600 dark:text-slate-400 font-mono">Demo Admin Password: <strong class="text-rose-500">admin123</strong></p>
+        
+        <form onsubmit="handleAdminLogin(event)" class="space-y-3 pt-2">
+          <input type="password" id="admin-password-input" required placeholder="Enter password" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none text-center">
+          <button type="submit" class="w-full bg-rose-600 hover:bg-rose-500 text-white py-2.5 rounded-xl text-xs font-bold transition shadow-md">
+            Unlock Admin Moderation
+          </button>
+        </form>
+      </div>
+
+      <!-- Admin Main Dashboard Content (Visible after unlock) -->
+      <div id="admin-dashboard-content" class="hidden space-y-10">
+
+        <!-- SUBMISSION MODERATION QUEUE -->
+        <div class="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div>
+              <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                <i class="fa-solid fa-clock-rotate-left text-amber-500"></i>
+                <span>Pending User Submissions Queue</span>
+              </h3>
+              <p class="text-xs text-slate-500">Articles submitted by readers requiring your permission before appearing live.</p>
+            </div>
+            <span id="queue-count-badge" class="px-3 py-1 bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold text-xs rounded-full border border-amber-500/20">
+              0 Pending
+            </span>
+          </div>
+
+          <div id="pending-queue-list" class="space-y-4">
+            <!-- Pending cards injected via JS -->
+          </div>
+        </div>
+
+        <!-- PUBLISHED POSTS MANAGER -->
+        <div class="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+          <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div>
+              <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center space-x-2">
+                <i class="fa-solid fa-globe text-emerald-500"></i>
+                <span>Published Articles</span>
+              </h3>
+              <p class="text-xs text-slate-500">Manage existing live blog posts on the public feed.</p>
+            </div>
+          </div>
+
+          <div id="published-manager-list" class="space-y-3">
+            <!-- Published posts list -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- PUBLIC SUBMIT DRAFT MODAL -->
+  <div id="submit-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 max-w-2xl w-full rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 md:p-8 space-y-5 my-8">
+      <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
+        <div>
+          <h3 class="font-extrabold text-lg text-slate-900 dark:text-white flex items-center space-x-2">
+            <i class="fa-solid fa-paper-plane text-rose-500"></i>
+            <span>Submit Post for Review</span>
+          </h3>
+          <p class="text-xs text-slate-500">Have an opinion on societal issues, politics, or showbiz? Send it to moderation!</p>
+        </div>
+        <button onclick="closeSubmitModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handlePublicSubmission(event)" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Your Name / Alias</label>
+            <input type="text" id="submit-author" required placeholder="e.g., Curious Reader" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Topic Category</label>
+            <select id="submit-category" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+              <option value="Societal Issues">Societal Issues</option>
+              <option value="Politics">Politics</option>
+              <option value="Showbiz">Showbiz</option>
+              <option value="Random Stuff">Random Stuff</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Catchy Article Title</label>
+          <input type="text" id="submit-title" required placeholder="e.g., Why Are We Still Obsessed With Celebrities in 2026?" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Image Banner URL (Optional)</label>
+          <input type="url" id="submit-image" placeholder="https://images.unsplash.com/..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Short Excerpt / Teaser Summary</label>
+          <input type="text" id="submit-excerpt" required placeholder="Brief 1-2 sentence summary of your main takeaway..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Full Article Content</label>
+          <textarea id="submit-content" rows="6" required placeholder="Write your unfiltered thoughts here..." class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 font-sans"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Tags (Comma separated)</label>
+          <input type="text" id="submit-tags" placeholder="Culture, PopCulture, Rant" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none">
+        </div>
+
+        <div class="flex justify-end space-x-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" onclick="closeSubmitModal()" class="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-white">
+            Cancel
+          </button>
+          <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2 rounded-xl text-xs font-bold transition shadow-lg shadow-rose-600/30">
+            Submit for Admin Approval
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ARTICLE READER MODAL -->
+  <div id="reader-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 max-w-3xl w-full max-h-[90vh] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col my-8">
+      
+      <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+        <span id="modal-category" class="px-3 py-1 bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 text-[10px] font-black rounded-full uppercase tracking-wider">
+          Category
+        </span>
+        <button onclick="closeReaderModal()" class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-6 md:p-8 overflow-y-auto space-y-6">
+        <h1 id="modal-title" class="text-2xl md:text-4xl font-black font-serif text-slate-900 dark:text-white leading-tight">
+          Article Title
+        </h1>
+
+        <div class="flex items-center space-x-3 text-xs text-slate-500 border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div class="w-8 h-8 rounded-full bg-rose-600 flex items-center justify-center text-white font-bold text-xs" id="modal-author-avatar">
+            ?
+          </div>
+          <div>
+            <span id="modal-author-name" class="font-bold text-slate-800 dark:text-slate-200 block">Author</span>
+            <span id="modal-date-time" class="text-[10px]">Date • Read Time</span>
+          </div>
+        </div>
+
+        <img id="modal-cover" src="" class="w-full h-64 md:h-80 object-cover rounded-2xl shadow-md" alt="Cover Image">
+
+        <div id="modal-content" class="text-slate-700 dark:text-slate-300 text-sm md:text-base leading-relaxed space-y-4 font-sans">
+          <!-- Article HTML -->
+        </div>
+
+        <!-- Comments Section -->
+        <div class="pt-8 border-t border-slate-100 dark:border-slate-800">
+          <h3 class="font-bold text-base text-slate-900 dark:text-white mb-4">Comments (<span id="comments-count">0</span>)</h3>
+          
+          <div id="modal-comments-list" class="space-y-3 mb-6">
+            <!-- Comments injected -->
+          </div>
+
+          <form onsubmit="handleAddComment(event)" class="space-y-3">
+            <div class="flex space-x-2">
+              <input type="text" id="comment-author-input" required placeholder="Your Name" class="w-1/3 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none">
+              <input type="text" id="comment-text-input" required placeholder="Leave a comment..." class="w-2/3 px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none">
+            </div>
+            <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-1.5 rounded-xl text-xs font-bold transition">
+              Post Comment
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ADMIN CREATE / EDIT POST MODAL -->
+  <div id="post-editor-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white dark:bg-slate-900 max-w-2xl w-full rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 md:p-8 space-y-4 my-8">
+      <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+        <h3 id="form-modal-title" class="font-bold text-base text-slate-900 dark:text-white">Admin Post Editor</h3>
+        <button onclick="closePostEditorModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="admin-post-form" onsubmit="saveAdminPost(event)" class="space-y-4">
+        <input type="hidden" id="admin-post-id" value="">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Article Title</label>
+          <input type="text" id="admin-form-title" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Category</label>
+            <select id="admin-form-category" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none">
+              <option value="Societal Issues">Societal Issues</option>
+              <option value="Politics">Politics</option>
+              <option value="Showbiz">Showbiz</option>
+              <option value="Random Stuff">Random Stuff</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Author Name</label>
+            <input type="text" id="admin-form-author" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Image URL</label>
+          <input type="url" id="admin-form-image" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Excerpt Summary</label>
+          <input type="text" id="admin-form-excerpt" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Full Article Body</label>
+          <textarea id="admin-form-content" rows="6" required class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none font-sans"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Tags (Comma separated)</label>
+          <input type="text" id="admin-form-tags" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none">
+        </div>
+
+        <div class="flex justify-end space-x-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" onclick="closePostEditorModal()" class="px-4 py-2 text-xs font-semibold text-slate-500">Cancel</button>
+          <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-md transition">
+            Publish Directly to Feed
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // DEFAULT INITIAL BLOG DATA
+    const defaultPublishedPosts = [
+      {
+        id: 'post-101',
+        title: 'Why Are We Still Working 40 Hours a Week in the Age of AI?',
+        excerpt: 'Productivity has exploded over the past three decades, yet the standard 9-to-5 remains stubbornly unchanged. What gives?',
+        category: 'Societal Issues',
+        featured: true,
+        image: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1000&q=80',
+        author: 'Jordan Vance',
+        date: 'Sept 25, 2026',
+        readTime: '5 min read',
+        tags: ['WorkCulture', 'SocietalIssues', 'Productivity'],
+        content: `
+          <p class="font-semibold text-base">We were promised that automation and technology would grant humanity endless leisure time. Instead, we just get more emails.</p>
+          <p>Looking at the modern landscape, standard work expectations haven't evolved at the same pace as computational efficiency. Societal burnout is at an all-time high, raising fundamental questions about how we structure work, productivity, and life balance.</p>
+          <p>Why do we still tie personal worth to hours spent at a desk when output matter far more than presence?</p>
+        `,
+        comments: [
+          { author: 'Clara M.', text: '100% agree! We need a standard 4-day workweek everywhere.', date: '1 hour ago' }
+        ]
+      },
+      {
+        id: 'post-102',
+        title: 'Showbiz PR Stunts vs Real Celebrity Feuds: Can You Tell the Difference?',
+        excerpt: 'From manufactured social media callouts to calculated red carpet snubs, Hollywood PR machinery is more aggressive than ever.',
+        category: 'Showbiz',
+        featured: false,
+        image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
+        author: 'Sasha Blake',
+        date: 'Sept 24, 2026',
+        readTime: '4 min read',
+        tags: ['Hollywood', 'Showbiz', 'PopCulture'],
+        content: `<p>Every time two A-list actors suddenly unfollow each other right before a movie trailer drops, an angel gets its wings—and a publicist gets a massive bonus...</p>`,
+        comments: []
+      },
+      {
+        id: 'post-103',
+        title: 'The Bizarre Psychology of Loud Speakerphone Users in Public',
+        excerpt: 'A deep dive into why some people feel entirely comfortable broadcasting their entire personal argument at full volume in grocery aisles.',
+        category: 'Random Stuff',
+        featured: false,
+        image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80',
+        author: 'Dave Miller',
+        date: 'Sept 22, 2026',
+        readTime: '3 min read',
+        tags: ['Etiquette', 'RandomStuff', 'Humor'],
+        content: `<p>Is it lack of self-awareness or a subtle dominance display? Let us examine the shower-thought science behind public speakerphone callers...</p>`,
+        comments: []
+      }
+    ];
+
+    const defaultPendingQueue = [
+      {
+        id: 'queue-1',
+        title: 'Do Political Debates Even Change Anyone’s Mind Anymore?',
+        excerpt: 'With echo chambers and algorithmic feeds, debates feel less like persuasion and more like sports team tribalism.',
+        category: 'Politics',
+        image: 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=800&q=80',
+        author: 'Anonymous Reader',
+        date: 'Pending Approval',
+        readTime: '4 min read',
+        tags: ['Politics', 'Debate', 'Elections'],
+        content: `<p>I was watching the latest political commentary stream and realized: nobody in the comments section is actually listening. Everyone just wants their team to score a viral dunk. How do we rebuild genuine political discourse?</p>`
+      }
+    ];
+
+    // STATE VARIABLES
+    let state = {
+      publishedPosts: JSON.parse(localStorage.getItem('obw_published_posts')) || defaultPublishedPosts,
+      pendingQueue: JSON.parse(localStorage.getItem('obw_pending_queue')) || defaultPendingQueue,
+      activeCategory: 'All',
+      searchQuery: '',
+      isAdminUnlocked: false,
+      currentView: 'public', // 'public' or 'admin'
+      activeReaderPostId: null
+    };
+
+    // INIT ON LOAD
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCategories();
+      renderFeed();
+      renderSidebarTags();
+      updatePendingBadge();
+    });
+
+    // VIEW SWITCHER
+    function switchView(view) {
+      state.currentView = view;
+      const publicView = document.getElementById('public-view');
+      const adminView = document.getElementById('admin-view');
+      const publicBtn = document.getElementById('nav-public-btn');
+      const adminBtn = document.getElementById('nav-admin-btn');
+
+      if (view === 'admin') {
+        publicView.classList.add('hidden');
+        adminView.classList.remove('hidden');
+        adminBtn.className = "px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition bg-rose-600 text-white shadow-md relative";
+        publicBtn.className = "px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700";
+        checkAdminLockState();
+      } else {
+        adminView.classList.add('hidden');
+        publicView.classList.remove('hidden');
+        publicBtn.className = "px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition bg-rose-600 text-white shadow-md";
+        adminBtn.className = "px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 relative";
+        renderFeed();
+      }
+    }
+
+    // CATEGORIES RENDER
+    function renderCategories() {
+      const categories = ['All', 'Societal Issues', 'Politics', 'Showbiz', 'Random Stuff'];
+      const container = document.getElementById('category-bar');
+
+      container.innerHTML = categories.map(cat => {
+        const isActive = state.activeCategory === cat;
+        const activeClass = isActive
+          ? 'bg-rose-600 text-white shadow-md'
+          : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800';
+        return `
+          <button onclick="setCategory('${cat}')" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${activeClass}">
+            ${cat}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function setCategory(cat) {
+      state.activeCategory = cat;
+      renderCategories();
+      renderFeed();
+    }
+
+    function handleSearch(query) {
+      state.searchQuery = query.toLowerCase();
+      renderFeed();
+    }
+
+    // RENDER PUBLIC FEED
+    function renderFeed() {
+      const filtered = state.publishedPosts.filter(p => {
+        const matchesCat = state.activeCategory === 'All' || p.category === state.activeCategory;
+        const matchesSearch = p.title.toLowerCase().includes(state.searchQuery) ||
+                              p.excerpt.toLowerCase().includes(state.searchQuery) ||
+                              (p.tags && p.tags.some(t => t.toLowerCase().includes(state.searchQuery)));
+        return matchesCat && matchesSearch;
+      });
+
+      const heroContainer = document.getElementById('featured-hero-container');
+      const gridContainer = document.getElementById('posts-grid');
+      const emptyState = document.getElementById('empty-feed-state');
+
+      if (filtered.length === 0) {
+        heroContainer.innerHTML = '';
+        gridContainer.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      } else {
+        emptyState.classList.add('hidden');
+      }
+
+      const featured = filtered.find(p => p.featured) || filtered[0];
+      const standard = filtered.filter(p => p.id !== featured.id);
+
+      // Hero Card
+      heroContainer.innerHTML = `
+        <article class="bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all group">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-0">
+            <div class="md:col-span-7 overflow-hidden relative min-h-[260px]">
+              <img src="${featured.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="${featured.title}">
+              <span class="absolute top-4 left-4 bg-rose-600 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">
+                ${featured.category}
+              </span>
+            </div>
+            <div class="md:col-span-5 p-6 md:p-8 flex flex-col justify-between space-y-4">
+              <div>
+                <div class="flex items-center space-x-2 text-[11px] text-slate-400 mb-2">
+                  <span>${featured.date}</span>
+                  <span>•</span>
+                  <span>${featured.readTime}</span>
+                </div>
+                <h2 onclick="openReaderModal('${featured.id}')" class="font-serif font-black text-xl md:text-2xl text-slate-900 dark:text-white hover:text-rose-500 cursor-pointer transition-colors leading-snug">
+                  ${featured.title}
+                </h2>
+                <p class="text-xs text-slate-600 dark:text-slate-400 mt-2 line-clamp-3 leading-relaxed">
+                  ${featured.excerpt}
+                </p>
+              </div>
+
+              <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">By ${featured.author}</span>
+                <button onclick="openReaderModal('${featured.id}')" class="text-xs font-bold text-rose-500 hover:text-rose-600 flex items-center space-x-1">
+                  <span>Read Take</span>
+                  <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+      `;
+
+      // Standard Grid
+      gridContainer.innerHTML = standard.map(p => `
+        <article class="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="relative h-44 overflow-hidden">
+              <img src="${p.image}" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" alt="${p.title}">
+              <span class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full">
+                ${p.category}
+              </span>
+            </div>
+            <div class="p-5 space-y-2">
+              <div class="text-[11px] text-slate-400">${p.date} • ${p.readTime}</div>
+              <h3 onclick="openReaderModal('${p.id}')" class="font-serif font-extrabold text-base text-slate-900 dark:text-white hover:text-rose-500 cursor-pointer line-clamp-2">
+                ${p.title}
+              </h3>
+              <p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
+                ${p.excerpt}
+              </p>
+            </div>
+          </div>
+
+          <div class="p-5 pt-0 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/60 pt-3">
+            <span class="text-xs text-slate-500 font-medium">By ${p.author}</span>
+            <button onclick="openReaderModal('${p.id}')" class="text-xs font-bold text-rose-500 hover:underline">
+              Read
+            </button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    // SIDEBAR TAGS
+    function renderSidebarTags() {
+      const tags = Array.from(new Set(state.publishedPosts.flatMap(p => p.tags || [])));
+      const container = document.getElementById('sidebar-tags');
+      container.innerHTML = tags.map(t => `
+        <span onclick="handleSearch('${t}')" class="cursor-pointer px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-rose-500 hover:text-white text-slate-600 dark:text-slate-300 text-[11px] font-semibold rounded-lg transition">
+          #${t}
+        </span>
+      `).join('');
+    }
+
+    // PUBLIC USER DRAFT SUBMISSION MODAL
+    function openSubmitModal() {
+      document.getElementById('submit-modal').classList.remove('hidden');
+    }
+    function closeSubmitModal() {
+      document.getElementById('submit-modal').classList.add('hidden');
+    }
+
+    function handlePublicSubmission(e) {
+      e.preventDefault();
+      const author = document.getElementById('submit-author').value;
+      const category = document.getElementById('submit-category').value;
+      const title = document.getElementById('submit-title').value;
+      const image = document.getElementById('submit-image').value || 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80';
+      const excerpt = document.getElementById('submit-excerpt').value;
+      const content = document.getElementById('submit-content').value;
+      const tags = document.getElementById('submit-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+
+      const pendingPost = {
+        id: 'queue-' + Date.now(),
+        title,
+        excerpt,
+        category,
+        image,
+        author,
+        date: 'Pending Review',
+        readTime: '3 min read',
+        tags: tags.length ? tags : ['UserSubmission'],
+        content: `<p>${content}</p>`,
+        comments: []
+      };
+
+      state.pendingQueue.push(pendingPost);
+      saveState();
+      updatePendingBadge();
+      closeSubmitModal();
+      e.target.reset();
+
+      alert("✅ Your article has been submitted to the Admin Moderation Queue! It will appear on the blog once approved by the administrator.");
+    }
+
+    // ADMIN LOCK & QUEUE RENDER
+    function checkAdminLockState() {
+      const lockScreen = document.getElementById('admin-lock-screen');
+      const dashboard = document.getElementById('admin-dashboard-content');
+      const authIndicator = document.getElementById('admin-auth-indicator');
+
+      if (state.isAdminUnlocked) {
+        lockScreen.classList.add('hidden');
+        dashboard.classList.remove('hidden');
+        authIndicator.innerHTML = `<i class="fa-solid fa-lock-open mr-1"></i> Authenticated`;
+        authIndicator.className = "text-xs text-emerald-400 font-semibold flex items-center";
+        renderAdminQueue();
+        renderAdminPublishedManager();
+      } else {
+        lockScreen.classList.remove('hidden');
+        dashboard.classList.add('hidden');
+        authIndicator.innerHTML = `<i class="fa-solid fa-lock mr-1"></i> Locked`;
+        authIndicator.className = "text-xs text-rose-400 font-semibold flex items-center";
+      }
+    }
+
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      const pass = document.getElementById('admin-password-input').value;
+      if (pass === 'admin123') {
+        state.isAdminUnlocked = true;
+        checkAdminLockState();
+      } else {
+        alert("❌ Incorrect password. Try default: admin123");
+      }
+    }
+
+    function lockAdmin() {
+      state.isAdminUnlocked = false;
+      checkAdminLockState();
+    }
+
+    function updatePendingBadge() {
+      const badge = document.getElementById('pending-badge');
+      const count = state.pendingQueue.length;
+      if (count > 0) {
+        badge.innerText = count;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    // RENDER PENDING QUEUE IN ADMIN
+    function renderAdminQueue() {
+      const container = document.getElementById('pending-queue-list');
+      const countBadge = document.getElementById('queue-count-badge');
+      
+      countBadge.innerText = `${state.pendingQueue.length} Pending`;
+
+      if (state.pendingQueue.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 bg-slate-50 dark:bg-slate-800/40 rounded-2xl text-xs text-slate-500">
+            <i class="fa-solid fa-circle-check text-2xl text-emerald-500 mb-2"></i>
+            <p class="font-bold">Queue clear!</p>
+            <p>No user draft submissions waiting for approval right now.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = state.pendingQueue.map(item => `
+        <div class="bg-slate-50 dark:bg-slate-800/60 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="space-y-1 max-w-xl">
+            <div class="flex items-center space-x-2">
+              <span class="px-2.5 py-0.5 bg-amber-500/20 text-amber-600 dark:text-amber-300 font-bold text-[10px] rounded-full">
+                ${item.category}
+              </span>
+              <span class="text-xs text-slate-400">By ${item.author}</span>
+            </div>
+            <h4 class="font-serif font-bold text-base text-slate-900 dark:text-white">${item.title}</h4>
+            <p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">${item.excerpt}</p>
+          </div>
+
+          <div class="flex items-center space-x-2 w-full md:w-auto justify-end">
+            <button onclick="approveQueueItem('${item.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow">
+              <i class="fa-solid fa-check mr-1"></i> Approve & Publish
+            </button>
+            <button onclick="rejectQueueItem('${item.id}')" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition">
+              <i class="fa-solid fa-trash mr-1"></i> Reject
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function approveQueueItem(id) {
+      const item = state.pendingQueue.find(q => q.id === id);
+      if (!item) return;
+
+      // Move to published
+      item.date = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      state.publishedPosts.unshift(item);
+      state.pendingQueue = state.pendingQueue.filter(q => q.id !== id);
+
+      saveState();
+      updatePendingBadge();
+      renderAdminQueue();
+      renderAdminPublishedManager();
+      alert("🎉 Post approved! It is now live on the public blog feed.");
+    }
+
+    function rejectQueueItem(id) {
+      if (confirm("Are you sure you want to reject and discard this draft submission?")) {
+        state.pendingQueue = state.pendingQueue.filter(q => q.id !== id);
+        saveState();
+        updatePendingBadge();
+        renderAdminQueue();
+      }
+    }
+
+    // PUBLISHED POSTS MANAGER IN ADMIN
+    function renderAdminPublishedManager() {
+      const container = document.getElementById('published-manager-list');
+      container.innerHTML = state.publishedPosts.map(p => `
+        <div class="bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-3">
+            <img src="${p.image}" class="w-10 h-10 rounded-lg object-cover" alt="">
+            <div>
+              <span class="font-bold text-slate-900 dark:text-white block line-clamp-1">${p.title}</span>
+              <span class="text-[10px] text-slate-400">${p.category} • By ${p.author}</span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="openEditAdminModal('${p.id}')" class="p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-slate-700 rounded">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button onclick="deletePublishedPost('${p.id}')" class="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-slate-700 rounded">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function deletePublishedPost(id) {
+      if (confirm("Delete this article from the public blog feed?")) {
+        state.publishedPosts = state.publishedPosts.filter(p => p.id !== id);
+        saveState();
+        renderAdminPublishedManager();
+        renderFeed();
+      }
+    }
+
+    // DIRECT ADMIN POST CREATION / EDIT
+    function openNewPostModal() {
+      document.getElementById('form-modal-title').innerText = "Create & Publish Direct Admin Post";
+      document.getElementById('admin-post-id').value = "";
+      document.getElementById('admin-post-form').reset();
+      document.getElementById('post-editor-modal').classList.remove('hidden');
+    }
+
+    function openEditAdminModal(id) {
+      const p = state.publishedPosts.find(post => post.id === id);
+      if (!p) return;
+
+      document.getElementById('form-modal-title').innerText = "Edit Published Post";
+      document.getElementById('admin-post-id').value = p.id;
+      document.getElementById('admin-form-title').value = p.title;
+      document.getElementById('admin-form-category').value = p.category;
+      document.getElementById('admin-form-author').value = p.author;
+      document.getElementById('admin-form-image').value = p.image;
+      document.getElementById('admin-form-excerpt').value = p.excerpt;
+      document.getElementById('admin-form-content').value = p.content;
+      document.getElementById('admin-form-tags').value = (p.tags || []).join(', ');
+
+      document.getElementById('post-editor-modal').classList.remove('hidden');
+    }
+
+    function closePostEditorModal() {
+      document.getElementById('post-editor-modal').classList.add('hidden');
+    }
+
+    function saveAdminPost(e) {
+      e.preventDefault();
+      const id = document.getElementById('admin-post-id').value;
+      const title = document.getElementById('admin-form-title').value;
+      const category = document.getElementById('admin-form-category').value;
+      const author = document.getElementById('admin-form-author').value;
+      const image = document.getElementById('admin-form-image').value || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80';
+      const excerpt = document.getElementById('admin-form-excerpt').value;
+      const content = document.getElementById('admin-form-content').value;
+      const tags = document.getElementById('admin-form-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+
+      if (id) {
+        const index = state.publishedPosts.findIndex(p => p.id === id);
+        if (index !== -1) {
+          state.publishedPosts[index] = {
+            ...state.publishedPosts[index],
+            title, category, author, image, excerpt, content, tags
+          };
+        }
+      } else {
+        const newPost = {
+          id: 'post-' + Date.now(),
+          title, excerpt, category, author, image,
+          featured: false,
+          date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          readTime: '4 min read',
+          tags, content, comments: []
+        };
+        state.publishedPosts.unshift(newPost);
+      }
+
+      saveState();
+      renderAdminPublishedManager();
+      closePostEditorModal();
+    }
+
+    // READER MODAL
+    function openReaderModal(id) {
+      const p = state.publishedPosts.find(post => post.id === id);
+      if (!p) return;
+
+      state.activeReaderPostId = id;
+      document.getElementById('modal-category').innerText = p.category;
+      document.getElementById('modal-title').innerText = p.title;
+      document.getElementById('modal-author-name').innerText = p.author;
+      document.getElementById('modal-date-time').innerText = `${p.date} • ${p.readTime}`;
+      document.getElementById('modal-cover').src = p.image;
+      document.getElementById('modal-content').innerHTML = p.content;
+
+      renderComments(p);
+      document.getElementById('reader-modal').classList.remove('hidden');
+    }
+
+    function closeReaderModal() {
+      document.getElementById('reader-modal').classList.add('hidden');
+    }
+
+    function renderComments(post) {
+      const countEl = document.getElementById('comments-count');
+      const listEl = document.getElementById('modal-comments-list');
+      const comments = post.comments || [];
+
+      countEl.innerText = comments.length;
+      if (comments.length === 0) {
+        listEl.innerHTML = `<p class="text-xs text-slate-400 italic">No comments yet.</p>`;
+        return;
+      }
+
+      listEl.innerHTML = comments.map(c => `
+        <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl text-xs space-y-1">
+          <div class="flex justify-between items-center font-bold">
+            <span class="text-slate-800 dark:text-slate-200">${c.author}</span>
+            <span class="text-[10px] text-slate-400">${c.date}</span>
+          </div>
+          <p class="text-slate-600 dark:text-slate-300">${c.text}</p>
+        </div>
+      `).join('');
+    }
+
+    function handleAddComment(e) {
+      e.preventDefault();
+      const author = document.getElementById('comment-author-input').value;
+      const text = document.getElementById('comment-text-input').value;
+
+      const post = state.publishedPosts.find(p => p.id === state.activeReaderPostId);
+      if (!post) return;
+
+      if (!post.comments) post.comments = [];
+      post.comments.push({ author, text, date: 'Just now' });
+
+      saveState();
+      renderComments(post);
+
+      document.getElementById('comment-author-input').value = '';
+      document.getElementById('comment-text-input').value = '';
+    }
+
+    // DARK MODE TOGGLE
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+      const icon = document.getElementById('dark-icon');
+      if (document.documentElement.classList.contains('dark')) {
+        icon.className = "fa-solid fa-sun text-amber-400";
+      } else {
+        icon.className = "fa-solid fa-moon";
+      }
+    }
+
+    // PERSISTENCE
+    function saveState() {
+      localStorage.setItem('obw_published_posts', JSON.stringify(state.publishedPosts));
+      localStorage.setItem('obw_pending_queue', JSON.stringify(state.pendingQueue));
+    }
+  </script>
+</body>
+</html>
